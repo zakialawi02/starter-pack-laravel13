@@ -19,8 +19,9 @@ class AuthenticatedSessionController extends Controller
         $previous = url()->previous();
 
         // Cek apakah belum ada ?redirect di URL dan previous bukan root/login
-        if (!$request->has('redirect') && !in_array($previous, [url('/'), route('login')])) {
+        if (! $request->has('redirect') && ! in_array($previous, [url('/'), route('login')]) && $this->sameOriginRedirectTarget($previous)) {
             $loginUrl = route('login', ['redirect' => $previous]);
+
             return redirect($loginUrl)->withInput($request->all())->with($request->session()->all());
         }
 
@@ -44,9 +45,9 @@ class AuthenticatedSessionController extends Controller
         // Check if there is a 'redirect' query parameter
         if (isset($parsedUrl['query'])) {
             parse_str($parsedUrl['query'], $queryParams);
-            $redirectTo = $queryParams['redirect'] ?? null;
-            // If redirectTo exists and it's not just the root '/', redirect accordingly
-            if ($redirectTo && $redirectTo !== '/') {
+            $redirectTo = $this->sameOriginRedirectTarget($queryParams['redirect'] ?? null);
+            // Only follow redirect targets that stay on this site
+            if ($redirectTo) {
                 return redirect($redirectTo);
             }
         }
