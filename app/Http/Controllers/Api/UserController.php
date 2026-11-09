@@ -234,8 +234,8 @@ class UserController extends Controller
             $file = $request->file('photo_profile');
             $timestamp = now()->timestamp;
             $randomString = uniqid();
-            $extension = $file->getClientOriginalExtension();
-            $newFileName = $timestamp . '_' . $randomString . '.' . $extension;
+            $extension = $file->guessExtension();
+            $newFileName = $timestamp.'_'.$randomString.'.'.$extension;
 
             $user = Auth::user();
 
@@ -248,7 +248,7 @@ class UserController extends Controller
             }
 
             $file->storeAs('profile_photos', $newFileName, 'public');
-            $path = '/storage/profile_photos/' . $newFileName;
+            $path = '/storage/profile_photos/'.$newFileName;
 
             $user->profile_photo_path = $path;
             $user->save();

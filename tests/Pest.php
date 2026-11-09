@@ -1,5 +1,9 @@
 <?php
 
+use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\UploadedFile;
+use Tests\TestCase;
+
 /*
 |--------------------------------------------------------------------------
 | Test Case
@@ -11,8 +15,8 @@
 |
 */
 
-pest()->extend(Tests\TestCase::class)
-    ->use(Illuminate\Foundation\Testing\RefreshDatabase::class)
+pest()->extend(TestCase::class)
+    ->use(RefreshDatabase::class)
     ->in('Feature');
 
 /*
@@ -44,4 +48,19 @@ expect()->extend('toBeOne', function () {
 function something()
 {
     // ..
+}
+
+/**
+ * Build an upload whose bytes are a real GIF followed by HTML, sent under the given client filename.
+ */
+function gifPolyglotUpload(string $clientFilename): UploadedFile
+{
+    $path = tempnam(sys_get_temp_dir(), 'gif');
+
+    file_put_contents(
+        $path,
+        base64_decode('R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7').'<script>alert(document.domain)</script>',
+    );
+
+    return new UploadedFile($path, $clientFilename, null, null, true);
 }
