@@ -39,7 +39,7 @@ describe('API Login Controller', function () {
                     'role',
                     'email_verified_at',
                     'profile_photo_path',
-                ]
+                ],
             ])
             ->assertJson([
                 'success' => true,
@@ -224,7 +224,7 @@ describe('API Login Controller', function () {
                     'username' => 'testuser',
                     'email' => 'test@gmail.com',
                     'role' => 'user',
-                ]
+                ],
             ]);
 
         // Ensure password is not included in response
@@ -259,6 +259,32 @@ describe('API Login Controller', function () {
             ]);
     });
 
+    test('username login is locked out after five failures even when the email field changes', function () {
+        User::factory()->create([
+            'username' => 'victimuser',
+            'password' => Hash::make('Correct-pass-1'),
+        ]);
+
+        foreach (range(1, 5) as $attempt) {
+            $this->postJson('/api/auth/login', [
+                'id_user' => 'victimuser',
+                'password' => "wrong-{$attempt}",
+                'email' => "rotated-{$attempt}@dummy.test",
+            ])->assertStatus(401);
+        }
+
+        $response = $this->postJson('/api/auth/login', [
+            'id_user' => 'victimuser',
+            'password' => 'Correct-pass-1',
+            'email' => 'rotated-6@dummy.test',
+        ]);
+
+        $response->assertStatus(401)
+            ->assertJsonMissingPath('token');
+
+        expect($response->json('message'))->toStartWith('Too many login attempts.');
+    });
+
     test('login response format is consistent', function () {
         $user = User::factory()->create([
             'email' => 'test@gmail.com',
@@ -278,7 +304,7 @@ describe('API Login Controller', function () {
             'token',
             'token_type',
             'redirect',
-            'data'
+            'data',
         ]);
 
         expect($responseData['success'])->toBeBool();

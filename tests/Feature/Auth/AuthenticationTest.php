@@ -31,6 +31,26 @@ test('users can not authenticate with invalid password', function () {
     $this->assertGuest();
 });
 
+test('username login is locked out after five failures even when the email field changes', function () {
+    User::factory()->create(['username' => 'victimuser']);
+
+    foreach (range(1, 5) as $attempt) {
+        $this->post('/login', [
+            'id_user' => 'victimuser',
+            'password' => "wrong-{$attempt}",
+            'email' => "rotated-{$attempt}@dummy.test",
+        ]);
+    }
+
+    $this->post('/login', [
+        'id_user' => 'victimuser',
+        'password' => 'password',
+        'email' => 'rotated-6@dummy.test',
+    ])->assertSessionHasErrors('email');
+
+    $this->assertGuest();
+});
+
 test('users can logout', function () {
     $user = User::factory()->create();
 
