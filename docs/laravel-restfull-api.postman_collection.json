@@ -3,7 +3,8 @@
 		"_postman_id": "c65ddc3d-e06e-4bed-8883-b734cb10bb0b",
 		"name": "laravel-restfull-api",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
-		"_exporter_id": "25223819"
+		"_exporter_id": "25223819",
+		"description": "REST API of the Laravel 13 starter pack. Authenticate with a Laravel Sanctum bearer token from POST /api/auth/login or POST /api/auth/register and send it as `Authorization: Bearer <token>`. A new login revokes the user's previous tokens. The /api/v1/user endpoints work with any token for the token owner's own account. The /api/v1/users endpoints require the token of a verified superadmin; any other token gets 403."
 	},
 	"item": [
 		{
@@ -245,7 +246,8 @@
 						"auth",
 						"login"
 					]
-				}
+				},
+				"description": "Log in with `id_user` (email or username) and `password` to receive a Sanctum token. After 5 failed attempts for the same id_user and IP, further attempts are rejected with 401 and a 'Too many login attempts' message until the lockout expires."
 			},
 			"response": [
 				{
@@ -591,7 +593,8 @@
 						"auth",
 						"forgot-password"
 					]
-				}
+				},
+				"description": "Send a password reset link to the given email. The response is always the same 200 message, whether or not the email belongs to an account, and the reset token is only delivered by email. Throttled to 6 requests per minute."
 			},
 			"response": [
 				{
@@ -733,76 +736,6 @@
 					],
 					"cookie": [],
 					"body": "{\n    \"success\": false,\n    \"errors\": {\n        \"email\": [\n            \"The email field is required.\"\n        ]\n    }\n}"
-				},
-				{
-					"name": "Error: User not found",
-					"originalRequest": {
-						"method": "POST",
-						"header": [],
-						"body": {
-							"mode": "raw",
-							"raw": "{\r\n  \"email\": \"john_doe_wrong@mail.com\"\r\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "{{base_url}}/api/auth/forgot-password",
-							"host": [
-								"{{base_url}}"
-							],
-							"path": [
-								"api",
-								"auth",
-								"forgot-password"
-							]
-						}
-					},
-					"status": "Not Found",
-					"code": 404,
-					"_postman_previewlanguage": "json",
-					"header": [
-						{
-							"key": "Host",
-							"value": "127.0.0.1:8000"
-						},
-						{
-							"key": "Connection",
-							"value": "close"
-						},
-						{
-							"key": "X-Powered-By",
-							"value": "PHP/8.2.17"
-						},
-						{
-							"key": "Cache-Control",
-							"value": "no-cache, private"
-						},
-						{
-							"key": "Date",
-							"value": "Sun, 13 Oct 2024 13:56:45 GMT"
-						},
-						{
-							"key": "Content-Type",
-							"value": "application/json"
-						},
-						{
-							"key": "X-RateLimit-Limit",
-							"value": "6"
-						},
-						{
-							"key": "X-RateLimit-Remaining",
-							"value": "5"
-						},
-						{
-							"key": "Access-Control-Allow-Origin",
-							"value": "*"
-						}
-					],
-					"cookie": [],
-					"body": "{\n    \"success\": false,\n    \"message\": \"User not found\"\n}"
 				}
 			]
 		},
@@ -2280,7 +2213,8 @@
 						"v1",
 						"users"
 					]
-				}
+				},
+				"description": "List all users. Requires the Sanctum token of a verified superadmin (auth:sanctum, verified, role:superadmin). Any other token gets 403 Forbidden."
 			},
 			"response": [
 				{
@@ -2396,6 +2330,63 @@
 					],
 					"cookie": [],
 					"body": "{\n    \"success\": false,\n    \"message\": \"Please Login [POST] /api/auth/login\"\n}"
+				},
+				{
+					"name": "Error: not a verified superadmin",
+					"originalRequest": {
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": []
+						},
+						"url": {
+							"raw": "{{base_url}}/api/v1/users",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"users"
+							]
+						}
+					},
+					"status": "Forbidden",
+					"code": 403,
+					"_postman_previewlanguage": "json",
+					"header": [
+						{
+							"key": "Host",
+							"value": "127.0.0.1:8000"
+						},
+						{
+							"key": "Connection",
+							"value": "close"
+						},
+						{
+							"key": "X-Powered-By",
+							"value": "PHP/8.2.17"
+						},
+						{
+							"key": "Cache-Control",
+							"value": "no-cache, private"
+						},
+						{
+							"key": "Date",
+							"value": "Sun, 13 Oct 2024 14:16:30 GMT"
+						},
+						{
+							"key": "Content-Type",
+							"value": "application/json"
+						},
+						{
+							"key": "Access-Control-Allow-Origin",
+							"value": "*"
+						}
+					],
+					"body": "{\n    \"message\": \"Your email address is not verified.\"\n}",
+					"cookie": []
 				}
 			]
 		},
@@ -2446,7 +2437,8 @@
 							"description": "required"
 						}
 					]
-				}
+				},
+				"description": "Get one user by ID. Requires the Sanctum token of a verified superadmin (auth:sanctum, verified, role:superadmin). Any other token gets 403 Forbidden."
 			},
 			"response": [
 				{
@@ -2600,6 +2592,82 @@
 					],
 					"cookie": [],
 					"body": "{\n    \"success\": true,\n    \"data\": {\n        \"id\": \"00567907-cdaf-3b6d-8e0b-c82c4542482b\",\n        \"name\": \"Dr. Vena Kuhlman\",\n        \"username\": \"habshire\",\n        \"email\": \"agustin.schuppe@example.org\",\n        \"role\": \"user\",\n        \"profile_photo_path\": \"http://localhost:8000/assets/img/profile/user.png\"\n    }\n}"
+				},
+				{
+					"name": "Error: not a verified superadmin",
+					"originalRequest": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"description": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "formdata",
+							"formdata": []
+						},
+						"url": {
+							"raw": "{{base_url}}/api/v1/users/:user_id",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"users",
+								":user_id"
+							],
+							"variable": [
+								{
+									"key": "user_id",
+									"value": "068545c2-6b8e-3a52-b72a-dc1cf83dbd39",
+									"description": "required"
+								}
+							]
+						}
+					},
+					"status": "Forbidden",
+					"code": 403,
+					"_postman_previewlanguage": "json",
+					"header": [
+						{
+							"key": "Host",
+							"value": "127.0.0.1:8000"
+						},
+						{
+							"key": "Connection",
+							"value": "close"
+						},
+						{
+							"key": "X-Powered-By",
+							"value": "PHP/8.2.17"
+						},
+						{
+							"key": "Cache-Control",
+							"value": "no-cache, private"
+						},
+						{
+							"key": "Date",
+							"value": "Thu, 27 Mar 2025 15:57:02 GMT"
+						},
+						{
+							"key": "Content-Type",
+							"value": "application/json"
+						},
+						{
+							"key": "phpdebugbar-id",
+							"value": "01JQC54EFMPK2SBN1WTJD4HD9W"
+						},
+						{
+							"key": "Access-Control-Allow-Origin",
+							"value": "*"
+						}
+					],
+					"body": "{\n    \"message\": \"Your email address is not verified.\"\n}",
+					"cookie": []
 				}
 			]
 		},
@@ -2645,7 +2713,8 @@
 						"users",
 						""
 					]
-				}
+				},
+				"description": "Create a user. Requires the Sanctum token of a verified superadmin (auth:sanctum, verified, role:superadmin). Any other token gets 403 Forbidden."
 			},
 			"response": [
 				{
@@ -2795,6 +2864,80 @@
 					],
 					"cookie": [],
 					"body": "{\n    \"success\": false,\n    \"message\": \"Validation failed.\",\n    \"errors\": {\n        \"name\": [\n            \"Name is required\"\n        ],\n        \"username\": [\n            \"The username has already been taken.\"\n        ],\n        \"email\": [\n            \"The email has already been taken.\"\n        ]\n    }\n}"
+				},
+				{
+					"name": "Error: not a verified superadmin",
+					"originalRequest": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"description": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"name\": \"\",\r\n  \"username\": \"johndoe123\",\r\n  \"email\": \"john_doe@mail.com\",\r\n  \"role\": \"admin\",\r\n  \"password\": \"12345678\",\r\n  \"password_confirmation\": \"12345678\"\r\n}\r\n",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/api/v1/users/",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"users",
+								""
+							]
+						}
+					},
+					"status": "Forbidden",
+					"code": 403,
+					"_postman_previewlanguage": "json",
+					"header": [
+						{
+							"key": "Host",
+							"value": "127.0.0.1:8000"
+						},
+						{
+							"key": "Connection",
+							"value": "close"
+						},
+						{
+							"key": "X-Powered-By",
+							"value": "PHP/8.2.17"
+						},
+						{
+							"key": "Cache-Control",
+							"value": "no-cache, private"
+						},
+						{
+							"key": "Date",
+							"value": "Thu, 27 Mar 2025 16:28:39 GMT"
+						},
+						{
+							"key": "Content-Type",
+							"value": "application/json"
+						},
+						{
+							"key": "phpdebugbar-id",
+							"value": "01JQC6YBNFA0A7E6XJRM7Y0J3V"
+						},
+						{
+							"key": "Access-Control-Allow-Origin",
+							"value": "*"
+						}
+					],
+					"body": "{\n    \"message\": \"Your email address is not verified.\"\n}",
+					"cookie": []
 				}
 			]
 		},
@@ -2846,7 +2989,8 @@
 							"value": "0198d0b6-43f1-717a-b4af-2921ffea5423"
 						}
 					]
-				}
+				},
+				"description": "Update a user. Requires the Sanctum token of a verified superadmin (auth:sanctum, verified, role:superadmin). Any other token gets 403 Forbidden."
 			},
 			"response": [
 				{
@@ -3089,6 +3233,86 @@
 					],
 					"cookie": [],
 					"body": "{\n    \"success\": false,\n    \"message\": \"Validation failed.\",\n    \"errors\": {\n        \"username\": [\n            \"The username has already been taken.\"\n        ]\n    }\n}"
+				},
+				{
+					"name": "Error: not a verified superadmin",
+					"originalRequest": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"description": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"name\": \"Dr. Vena Kuhlman\",\r\n    \"username\": \"habshire\",\r\n    \"email\": \"agustin.schuppe@example.org\",\r\n    \"role\": \"user\",\r\n    \"password\": \"\"\r\n}\r\n",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/api/v1/users/:userId",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"users",
+								":userId"
+							],
+							"variable": [
+								{
+									"key": "userId",
+									"value": ""
+								}
+							]
+						}
+					},
+					"status": "Forbidden",
+					"code": 403,
+					"_postman_previewlanguage": "json",
+					"header": [
+						{
+							"key": "Host",
+							"value": "127.0.0.1:8000"
+						},
+						{
+							"key": "Connection",
+							"value": "close"
+						},
+						{
+							"key": "X-Powered-By",
+							"value": "PHP/8.2.17"
+						},
+						{
+							"key": "Cache-Control",
+							"value": "no-cache, private"
+						},
+						{
+							"key": "Date",
+							"value": "Thu, 27 Mar 2025 16:49:43 GMT"
+						},
+						{
+							"key": "Content-Type",
+							"value": "application/json"
+						},
+						{
+							"key": "phpdebugbar-id",
+							"value": "01JQC84X6WX5TEBCNXESTDPG4P"
+						},
+						{
+							"key": "Access-Control-Allow-Origin",
+							"value": "*"
+						}
+					],
+					"body": "{\n    \"message\": \"Your email address is not verified.\"\n}",
+					"cookie": []
 				}
 			]
 		},
@@ -3140,7 +3364,8 @@
 							"value": "00567907-cdaf-3b6d-8e0b-c82c4542482b"
 						}
 					]
-				}
+				},
+				"description": "Delete a user (soft delete). Requires the Sanctum token of a verified superadmin (auth:sanctum, verified, role:superadmin). Any other token gets 403 Forbidden."
 			},
 			"response": [
 				{
@@ -3302,6 +3527,86 @@
 					],
 					"cookie": [],
 					"body": "{\n    \"success\": true,\n    \"message\": \"User deleted successfully.\"\n}"
+				},
+				{
+					"name": "Error: not a verified superadmin",
+					"originalRequest": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"description": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/api/v1/users/:userIDd",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"users",
+								":userIDd"
+							],
+							"variable": [
+								{
+									"key": "userIDd",
+									"value": "00567907-cdaf-3b6d-8e0b-c82c4542482s"
+								}
+							]
+						}
+					},
+					"status": "Forbidden",
+					"code": 403,
+					"_postman_previewlanguage": "json",
+					"header": [
+						{
+							"key": "Host",
+							"value": "127.0.0.1:8000"
+						},
+						{
+							"key": "Connection",
+							"value": "close"
+						},
+						{
+							"key": "X-Powered-By",
+							"value": "PHP/8.2.17"
+						},
+						{
+							"key": "Cache-Control",
+							"value": "no-cache, private"
+						},
+						{
+							"key": "Date",
+							"value": "Thu, 27 Mar 2025 17:00:02 GMT"
+						},
+						{
+							"key": "Content-Type",
+							"value": "application/json"
+						},
+						{
+							"key": "phpdebugbar-id",
+							"value": "01JQC8QSN9C0D6QVM97HMPM7BZ"
+						},
+						{
+							"key": "Access-Control-Allow-Origin",
+							"value": "*"
+						}
+					],
+					"body": "{\n    \"message\": \"Your email address is not verified.\"\n}",
+					"cookie": []
 				}
 			]
 		}
