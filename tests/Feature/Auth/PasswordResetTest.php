@@ -20,6 +20,19 @@ test('reset password link can be requested', function () {
     Notification::assertSentTo($user, ResetPassword::class);
 });
 
+test('reset password link uses the configured app url instead of the request host', function () {
+    Notification::fake();
+    config(['app.url' => 'https://app.example.test']);
+
+    $user = User::factory()->create();
+
+    $this->post('http://attacker.test/forgot-password', ['email' => $user->email]);
+
+    Notification::assertSentTo($user, ResetPassword::class, function (ResetPassword $notification) use ($user) {
+        return str_starts_with($notification->toMail($user)->actionUrl, 'https://app.example.test/reset-password/');
+    });
+});
+
 test('reset password screen can be rendered', function () {
     Notification::fake();
 

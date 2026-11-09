@@ -59,6 +59,22 @@ describe('API Password Reset', function () {
             Notification::assertNothingSent();
         });
 
+        test('password reset link uses the configured app url instead of the request host', function () {
+            config(['app.url' => 'https://app.example.test']);
+
+            $user = User::factory()->create([
+                'email' => 'victim-dummy@example.com',
+            ]);
+
+            $this->postJson('http://attacker.test/api/auth/forgot-password', [
+                'email' => 'victim-dummy@example.com',
+            ])->assertStatus(200);
+
+            Notification::assertSentTo($user, ResetPassword::class, function (ResetPassword $notification) use ($user) {
+                return str_starts_with($notification->toMail($user)->actionUrl, 'https://app.example.test/reset-password/');
+            });
+        });
+
         test('password reset link generation requires email field', function () {
             $response = $this->postJson('/api/auth/forgot-password', []);
 
