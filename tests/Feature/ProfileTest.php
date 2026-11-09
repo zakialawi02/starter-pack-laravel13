@@ -1,6 +1,8 @@
 <?php
 
 use App\Models\User;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 
 test('profile page is displayed', function () {
     $user = User::factory()->create();
@@ -65,6 +67,25 @@ test('user can delete their account', function () {
 
     $this->assertGuest();
     $this->assertNotNull($user->fresh()->deleted_at);
+});
+
+test('profile photo is stored with the extension of its content, not the client filename', function () {
+    Storage::fake('public');
+
+    $user = User::factory()->create();
+
+    $response = $this
+        ->actingAs($user)
+        ->patch('/dashboard/photo-profile', [
+            'photo_profile' => gifPolyglotUpload('x.html'),
+        ]);
+
+    $response->assertSessionHasNoErrors();
+
+    $photoPath = $user->fresh()->profile_photo_path;
+
+    expect($photoPath)->toEndWith('.gif');
+    Storage::disk('public')->assertExists(Str::after($photoPath, '/storage/'));
 });
 
 test('correct password must be provided to delete account', function () {

@@ -14,9 +14,6 @@ class ProfileController extends Controller
 {
     /**
      * Display the user's profile form.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\View\View
      */
     public function edit(Request $request): View
     {
@@ -25,6 +22,7 @@ class ProfileController extends Controller
         ];
         /** @var User $user */
         $user = Auth::user();
+
         return view('pages.dashboard.profile.edit', [
             'data' => $data,
             'user' => $user,
@@ -33,9 +31,6 @@ class ProfileController extends Controller
 
     /**
      * Update the user's profile information.
-     *
-     * @param  \App\Http\Requests\ProfileUpdateRequest  $request
-     * @return \Illuminate\Http\RedirectResponse
      */
     public function update(ProfileUpdateRequest $request): RedirectResponse
     {
@@ -54,9 +49,6 @@ class ProfileController extends Controller
 
     /**
      * Update the user's profile photo.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\RedirectResponse
      */
     public function updatePhoto(Request $request): RedirectResponse
     {
@@ -68,8 +60,8 @@ class ProfileController extends Controller
         $file = $request->file('photo_profile');
         $timestamp = now()->timestamp;
         $randomString = uniqid();
-        $extension = $file->getClientOriginalExtension();
-        $newFileName = $timestamp . '_' . $randomString . '.' . $extension;
+        $extension = $file->guessExtension();
+        $newFileName = $timestamp.'_'.$randomString.'.'.$extension;
 
         // Cek jika pengguna sudah memiliki foto profil yang lama
         /** @var User $user */
@@ -84,7 +76,7 @@ class ProfileController extends Controller
 
         // Menyimpan file ke storage publik dengan nama baru
         $file->storeAs('profile_photos', $newFileName, 'public');
-        $path = '/storage/profile_photos/' . $newFileName;
+        $path = '/storage/profile_photos/'.$newFileName;
         // Memperbarui foto profil pengguna
         $user->update([
             'profile_photo_path' => $path, // Menyimpan path file di database
@@ -92,15 +84,12 @@ class ProfileController extends Controller
 
         return Redirect::route('admin.profile.edit')->with([
             'status' => 'photo-profile-updated',
-            'success' => __('messages.profile_updated_success')
+            'success' => __('messages.profile_updated_success'),
         ]);
     }
 
     /**
      * Delete the user's account.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\RedirectResponse
      */
     public function destroy(Request $request): RedirectResponse
     {

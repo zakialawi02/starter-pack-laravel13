@@ -68,20 +68,17 @@
                     </x-button-danger>
                 </div>
 
-                <div className="my-5 description">
+                <div class="description my-5">
                     <p>
-                        This table provides a complete list of all routes
-                        defined in the Laravel application. Each route
-                        specifies the HTTP method, the URL path, the
-                        controller/action handling the request, middleware
-                        applied to the route, and the route name if one is
-                        defined. Routes are grouped by authentication roles
-                        (superadmin, admin, user) and specific
-                        functionalities such as user management,
-                        authentication, profile editing, and email
-                        verification. The Laravel framework uses these
-                        routes to manage the application’s navigation and
-                        access control.
+                        This table lists the routes defined by the application.
+                        Each row shows the HTTP method, the URL path, the route
+                        name, the middleware applied to the route, and the
+                        controller action that handles it. Routes are grouped by
+                        who can reach them: guests, authenticated users,
+                        verified users, superadmins (user management), and API
+                        clients using Sanctum bearer tokens. Run
+                        <code class="rounded bg-gray-100 px-1 font-mono text-sm">php artisan route:list</code>
+                        for the authoritative list.
                     </p>
                 </div>
                 <div class="mt-10 overflow-x-auto">
@@ -97,289 +94,112 @@
                                 </tr>
                             </thead>
 
+                            @php
+                                $methodColors = [
+                                    'GET' => 'bg-green-100 text-green-800',
+                                    'POST' => 'bg-yellow-100 text-yellow-800',
+                                    'PUT' => 'bg-blue-100 text-blue-800',
+                                    'PATCH' => 'bg-blue-100 text-blue-800',
+                                    'PUT/PATCH' => 'bg-blue-100 text-blue-800',
+                                    'DELETE' => 'bg-red-100 text-red-800',
+                                ];
+
+                                $routeGroups = [
+                                    'Guest Routes' => [
+                                        ['GET', '/register', 'register', 'guest', 'RegisteredUserController@create'],
+                                        ['POST', '/register', '-', 'guest', 'RegisteredUserController@store'],
+                                        ['GET', '/login', 'login', 'guest', 'AuthenticatedSessionController@create'],
+                                        ['POST', '/login', '-', 'guest', 'AuthenticatedSessionController@store'],
+                                        ['GET', '/forgot-password', 'password.request', 'guest', 'PasswordResetLinkController@create'],
+                                        ['POST', '/forgot-password', 'password.email', 'guest', 'PasswordResetLinkController@store'],
+                                        ['GET', '/reset-password/{token}', 'password.reset', 'guest', 'NewPasswordController@create'],
+                                        ['POST', '/reset-password', 'password.store', 'guest', 'NewPasswordController@store'],
+                                    ],
+                                    'Social Login' => [
+                                        ['GET', '/auth/{provider}/redirect', 'auth.redirect', '-', 'Socialite\ProviderRedirectController'],
+                                        ['GET', '/auth/{provider}/callback', 'auth.callback', '-', 'Socialite\ProviderCallbackController'],
+                                    ],
+                                    'Authenticated Routes' => [
+                                        ['GET', '/verify-email', 'verification.notice', 'auth', 'EmailVerificationPromptController'],
+                                        ['GET', '/verify-email/{id}/{hash}', 'verification.verify', 'auth, signed, throttle:6,1', 'VerifyEmailController'],
+                                        ['POST', '/email/verification-notification', 'verification.send', 'auth, throttle:6,1', 'EmailVerificationNotificationController@store'],
+                                        ['GET', '/confirm-password', 'password.confirm', 'auth', 'ConfirmablePasswordController@show'],
+                                        ['POST', '/confirm-password', '-', 'auth', 'ConfirmablePasswordController@store'],
+                                        ['PUT', '/password', 'password.update', 'auth', 'PasswordController@update'],
+                                        ['POST', '/logout', 'logout', 'auth', 'AuthenticatedSessionController@destroy'],
+                                        ['GET', '/dashboard/profile', 'admin.profile.edit', 'auth', 'ProfileController@edit'],
+                                        ['PATCH', '/dashboard/profile', 'admin.profile.update', 'auth', 'ProfileController@update'],
+                                        ['PATCH', '/dashboard/photo-profile', 'admin.profile.photo-update', 'auth', 'ProfileController@updatePhoto'],
+                                        ['DELETE', '/dashboard/profile', 'admin.profile.destroy', 'auth', 'ProfileController@destroy'],
+                                    ],
+                                    'Dashboard (verified users)' => [
+                                        ['GET', '/dashboard', 'admin.dashboard', 'auth, verified', 'DashboardController@index'],
+                                        ['GET', '/dashboard/empty', 'admin.dashboard.empty', 'auth, verified', 'DashboardController@empty'],
+                                    ],
+                                    'User Management (superadmin)' => [
+                                        ['GET', '/dashboard/users', 'admin.users.index', 'auth, verified, role:superadmin', 'UserController@index'],
+                                        ['POST', '/dashboard/users', 'admin.users.store', 'auth, verified, role:superadmin', 'UserController@store'],
+                                        ['GET', '/dashboard/users/{user}', 'admin.users.show', 'auth, verified, role:superadmin', 'UserController@show'],
+                                        ['PUT/PATCH', '/dashboard/users/{user}', 'admin.users.update', 'auth, verified, role:superadmin', 'UserController@update'],
+                                        ['DELETE', '/dashboard/users/{user}', 'admin.users.destroy', 'auth, verified, role:superadmin', 'UserController@destroy'],
+                                        ['DELETE', '/dashboard/users/batch', 'admin.users.batch-destroy', 'auth, verified, role:superadmin', 'UserController@batchDestroy'],
+                                        ['GET', '/dashboard/users/export', 'admin.users.export', 'auth, verified, role:superadmin', 'UserController@export'],
+                                        ['GET', '/dashboard/users/template', 'admin.users.template', 'auth, verified, role:superadmin', 'UserController@downloadTemplate'],
+                                        ['POST', '/dashboard/users/import-preview', 'admin.users.import-preview', 'auth, verified, role:superadmin', 'UserController@importPreview'],
+                                        ['POST', '/dashboard/users/import-confirm', 'admin.users.import-confirm', 'auth, verified, role:superadmin', 'UserController@importConfirm'],
+                                    ],
+                                    'API: Authentication (/api/auth)' => [
+                                        ['POST', '/api/auth/register', 'api.auth.register', '-', 'Api\Auth\RegisterController@register'],
+                                        ['GET', '/api/auth/login', 'api.auth.', '-', 'Closure (usage hint)'],
+                                        ['POST', '/api/auth/login', 'api.auth.login', '-', 'Api\Auth\LoginController@login'],
+                                        ['POST', '/api/auth/logout', 'api.auth.logout', 'auth:sanctum', 'Api\Auth\LogoutController@logout'],
+                                        ['POST', '/api/auth/forgot-password', 'api.auth.password.email', 'throttle:6,1', 'Api\Auth\AuthController@passwordResetLink'],
+                                        ['GET', '/api/auth/reset-password/{token}', 'api.auth.password.reset', '-', 'Closure (usage hint)'],
+                                        ['POST', '/api/auth/reset-password', 'api.auth.password.store', '-', 'Api\Auth\AuthController@newPassword'],
+                                        ['GET', '/api/auth/verify-email', 'api.auth.verification.notice', 'throttle:6,1', 'Closure (usage hint)'],
+                                        ['POST', '/api/auth/email/verification-notification', 'api.auth.verification.send', 'auth:sanctum, throttle:6,1', 'Api\Auth\AuthController@emailVerificationNotification'],
+                                        ['GET', '/api/auth/verify-email/{id}/{hash}', 'api.auth.verification.verify', 'auth:sanctum, signed, throttle:6,1', 'Api\Auth\AuthController@verifyEmail'],
+                                    ],
+                                    'API: Current User (/api/v1/user)' => [
+                                        ['GET', '/api/v1/user', 'api.user.me', 'auth:sanctum', 'Api\UserController@me'],
+                                        ['PATCH', '/api/v1/user', 'api.user.me', 'auth:sanctum', 'Api\UserController@updateMyProfile'],
+                                        ['PATCH', '/api/v1/user/photo', 'api.user.photo', 'auth:sanctum', 'Api\UserController@updateMyPhotoProfile'],
+                                        ['DELETE', '/api/v1/user/destroy/me', 'api.user.destroy.me', 'auth:sanctum', 'Api\UserController@destroyMyAccount'],
+                                    ],
+                                    'API: User Management (superadmin)' => [
+                                        ['GET', '/api/v1/users', 'api.users.index', 'auth:sanctum, verified, role:superadmin', 'Api\UserController@index'],
+                                        ['POST', '/api/v1/users', 'api.users.store', 'auth:sanctum, verified, role:superadmin', 'Api\UserController@store'],
+                                        ['GET', '/api/v1/users/{user}', 'api.users.show', 'auth:sanctum, verified, role:superadmin', 'Api\UserController@show'],
+                                        ['PUT/PATCH', '/api/v1/users/{user}', 'api.users.update', 'auth:sanctum, verified, role:superadmin', 'Api\UserController@update'],
+                                        ['DELETE', '/api/v1/users/{user}', 'api.users.destroy', 'auth:sanctum, verified, role:superadmin', 'Api\UserController@destroy'],
+                                    ],
+                                    'General Routes' => [
+                                        ['GET', '/', 'home', '-', 'HomeController@index'],
+                                        ['GET', '/admin', '-', '-', 'Redirect to /dashboard'],
+                                        ['GET', '/docs', 'docs', '-', 'Closure'],
+                                        ['GET', '/up', '-', '-', 'Health check'],
+                                    ],
+                                ];
+                            @endphp
+
                             <tbody class="divide-y divide-gray-200 bg-white">
-                                <!-- Guest Routes -->
-                                <tr class="bg-blue-50">
-                                    <td class="px-6 py-3 text-lg font-semibold text-blue-700" colspan="5">Guest Routes</td>
-                                </tr>
+                                @foreach ($routeGroups as $group => $routes)
+                                    <tr class="bg-blue-50">
+                                        <td class="px-6 py-3 text-lg font-semibold text-blue-700" colspan="5">{{ $group }}</td>
+                                    </tr>
 
-                                <!-- Registration -->
-                                <tr>
-                                    <td class="px-6 py-4">
-                                        <span class="rounded bg-green-100 px-2 py-1 text-xs font-semibold text-green-800">GET</span>
-                                    </td>
-                                    <td class="px-6 py-4">/register</td>
-                                    <td class="px-6 py-4 font-mono text-sm">register</td>
-                                    <td class="px-6 py-4">guest</td>
-                                    <td class="px-6 py-4 font-mono text-sm">RegisteredUserController@create</td>
-                                </tr>
-                                <tr>
-                                    <td class="px-6 py-4">
-                                        <span class="rounded bg-yellow-100 px-2 py-1 text-xs font-semibold text-yellow-800">POST</span>
-                                    </td>
-                                    <td class="px-6 py-4">/register</td>
-                                    <td class="px-6 py-4">-</td>
-                                    <td class="px-6 py-4">guest</td>
-                                    <td class="px-6 py-4 font-mono text-sm">RegisteredUserController@store</td>
-                                </tr>
-
-                                <!-- Login -->
-                                <tr>
-                                    <td class="px-6 py-4">
-                                        <span class="rounded bg-green-100 px-2 py-1 text-xs font-semibold text-green-800">GET</span>
-                                    </td>
-                                    <td class="px-6 py-4">/login</td>
-                                    <td class="px-6 py-4 font-mono text-sm">login</td>
-                                    <td class="px-6 py-4">guest</td>
-                                    <td class="px-6 py-4 font-mono text-sm">AuthenticatedSessionController@create</td>
-                                </tr>
-                                <tr>
-                                    <td class="px-6 py-4">
-                                        <span class="rounded bg-yellow-100 px-2 py-1 text-xs font-semibold text-yellow-800">POST</span>
-                                    </td>
-                                    <td class="px-6 py-4">/login</td>
-                                    <td class="px-6 py-4">-</td>
-                                    <td class="px-6 py-4">guest</td>
-                                    <td class="px-6 py-4 font-mono text-sm">AuthenticatedSessionController@store</td>
-                                </tr>
-
-                                <!-- Password Reset -->
-                                <tr>
-                                    <td class="px-6 py-4">
-                                        <span class="rounded bg-green-100 px-2 py-1 text-xs font-semibold text-green-800">GET</span>
-                                    </td>
-                                    <td class="px-6 py-4">/forgot-password</td>
-                                    <td class="px-6 py-4 font-mono text-sm">password.request</td>
-                                    <td class="px-6 py-4">guest</td>
-                                    <td class="px-6 py-4 font-mono text-sm">PasswordResetLinkController@create</td>
-                                </tr>
-                                <tr>
-                                    <td class="px-6 py-4">
-                                        <span class="rounded bg-yellow-100 px-2 py-1 text-xs font-semibold text-yellow-800">POST</span>
-                                    </td>
-                                    <td class="px-6 py-4">/forgot-password</td>
-                                    <td class="px-6 py-4 font-mono text-sm">password.email</td>
-                                    <td class="px-6 py-4">guest</td>
-                                    <td class="px-6 py-4 font-mono text-sm">PasswordResetLinkController@store</td>
-                                </tr>
-                                <tr>
-                                    <td class="px-6 py-4">
-                                        <span class="rounded bg-green-100 px-2 py-1 text-xs font-semibold text-green-800">GET</span>
-                                    </td>
-                                    <td class="px-6 py-4">/reset-password/{token}</td>
-                                    <td class="px-6 py-4 font-mono text-sm">password.reset</td>
-                                    <td class="px-6 py-4">guest</td>
-                                    <td class="px-6 py-4 font-mono text-sm">NewPasswordController@create</td>
-                                </tr>
-                                <tr>
-                                    <td class="px-6 py-4">
-                                        <span class="rounded bg-yellow-100 px-2 py-1 text-xs font-semibold text-yellow-800">POST</span>
-                                    </td>
-                                    <td class="px-6 py-4">/reset-password</td>
-                                    <td class="px-6 py-4 font-mono text-sm">password.store</td>
-                                    <td class="px-6 py-4">guest</td>
-                                    <td class="px-6 py-4 font-mono text-sm">NewPasswordController@store</td>
-                                </tr>
-
-                                <!-- Authenticated Routes -->
-                                <tr class="bg-blue-50">
-                                    <td class="px-6 py-3 text-lg font-semibold text-blue-700" colspan="5">Authenticated Routes</td>
-                                </tr>
-
-                                <!-- Email Verification -->
-                                <tr>
-                                    <td class="px-6 py-4">
-                                        <span class="rounded bg-green-100 px-2 py-1 text-xs font-semibold text-green-800">GET</span>
-                                    </td>
-                                    <td class="px-6 py-4">/verify-email</td>
-                                    <td class="px-6 py-4 font-mono text-sm">verification.notice</td>
-                                    <td class="px-6 py-4">auth</td>
-                                    <td class="px-6 py-4 font-mono text-sm">EmailVerificationPromptController</td>
-                                </tr>
-                                <tr>
-                                    <td class="px-6 py-4">
-                                        <span class="rounded bg-green-100 px-2 py-1 text-xs font-semibold text-green-800">GET</span>
-                                    </td>
-                                    <td class="px-6 py-4">/verify-email/{id}/{hash}</td>
-                                    <td class="px-6 py-4 font-mono text-sm">verification.verify</td>
-                                    <td class="px-6 py-4">auth, signed, throttle:6,1</td>
-                                    <td class="px-6 py-4 font-mono text-sm">VerifyEmailController</td>
-                                </tr>
-                                <tr>
-                                    <td class="px-6 py-4">
-                                        <span class="rounded bg-yellow-100 px-2 py-1 text-xs font-semibold text-yellow-800">POST</span>
-                                    </td>
-                                    <td class="px-6 py-4">/email/verification-notification</td>
-                                    <td class="px-6 py-4 font-mono text-sm">verification.send</td>
-                                    <td class="px-6 py-4">auth, throttle:6,1</td>
-                                    <td class="px-6 py-4 font-mono text-sm">EmailVerificationNotificationController@store</td>
-                                </tr>
-
-                                <!-- Password Confirmation -->
-                                <tr>
-                                    <td class="px-6 py-4">
-                                        <span class="rounded bg-green-100 px-2 py-1 text-xs font-semibold text-green-800">GET</span>
-                                    </td>
-                                    <td class="px-6 py-4">/confirm-password</td>
-                                    <td class="px-6 py-4 font-mono text-sm">password.confirm</td>
-                                    <td class="px-6 py-4">auth</td>
-                                    <td class="px-6 py-4 font-mono text-sm">ConfirmablePasswordController@show
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td class="px-6 py-4">
-                                        <span class="rounded bg-yellow-100 px-2 py-1 text-xs font-semibold text-yellow-800">POST</span>
-                                    </td>
-                                    <td class="px-6 py-4">/confirm-password</td>
-                                    <td class="px-6 py-4">-</td>
-                                    <td class="px-6 py-4">auth</td>
-                                    <td class="px-6 py-4 font-mono text-sm">ConfirmablePasswordController@store</td>
-                                </tr>
-
-                                <!-- Password Update -->
-                                <tr>
-                                    <td class="px-6 py-4">
-                                        <span class="rounded bg-blue-100 px-2 py-1 text-xs font-semibold text-blue-800">PUT</span>
-                                    </td>
-                                    <td class="px-6 py-4">/password</td>
-                                    <td class="px-6 py-4 font-mono text-sm">password.update</td>
-                                    <td class="px-6 py-4">auth</td>
-                                    <td class="px-6 py-4 font-mono text-sm">PasswordController@update</td>
-                                </tr>
-
-                                <!-- Logout -->
-                                <tr>
-                                    <td class="px-6 py-4">
-                                        <span class="rounded bg-red-100 px-2 py-1 text-xs font-semibold text-red-800">POST</span>
-                                    </td>
-                                    <td class="px-6 py-4">/logout</td>
-                                    <td class="px-6 py-4 font-mono text-sm">logout</td>
-                                    <td class="px-6 py-4">auth</td>
-                                    <td class="px-6 py-4 font-mono text-sm">AuthenticatedSessionController@destroy</td>
-                                </tr>
-
-                                <!-- Dashboard Routes -->
-                                <tr class="bg-blue-50">
-                                    <td class="px-6 py-3 text-lg font-semibold text-blue-700" colspan="5">Dashboard Routes</td>
-                                </tr>
-
-                                <!-- User Resource -->
-                                <tr>
-                                    <td class="px-6 py-4">
-                                        <span class="rounded bg-green-100 px-2 py-1 text-xs font-semibold text-green-800">GET</span>
-                                    </td>
-                                    <td class="px-6 py-4">/dashboard/users</td>
-                                    <td class="px-6 py-4 font-mono text-sm">admin.users.index</td>
-                                    <td class="px-6 py-4">auth, verified</td>
-                                    <td class="px-6 py-4 font-mono text-sm">UserController@index</td>
-                                </tr>
-                                <tr>
-                                    <td class="px-6 py-4">
-                                        <span class="rounded bg-yellow-100 px-2 py-1 text-xs font-semibold text-yellow-800">POST</span>
-                                    </td>
-                                    <td class="px-6 py-4">/dashboard/users</td>
-                                    <td class="px-6 py-4 font-mono text-sm">admin.users.store</td>
-                                    <td class="px-6 py-4">auth, verified</td>
-                                    <td class="px-6 py-4 font-mono text-sm">UserController@store</td>
-                                </tr>
-                                <tr>
-                                    <td class="px-6 py-4">
-                                        <span class="rounded bg-green-100 px-2 py-1 text-xs font-semibold text-green-800">GET</span>
-                                    </td>
-                                    <td class="px-6 py-4">/dashboard/users/{user}</td>
-                                    <td class="px-6 py-4 font-mono text-sm">admin.users.show</td>
-                                    <td class="px-6 py-4">auth, verified</td>
-                                    <td class="px-6 py-4 font-mono text-sm">UserController@show
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td class="px-6 py-4">
-                                        <span class="rounded bg-blue-100 px-2 py-1 text-xs font-semibold text-blue-800">PUT</span>
-                                    </td>
-                                    <td class="px-6 py-4">/dashboard/users/{user}</td>
-                                    <td class="px-6 py-4 font-mono text-sm">admin.users.update</td>
-                                    <td class="px-6 py-4">auth, verified</td>
-                                    <td class="px-6 py-4 font-mono text-sm">UserController@update</td>
-                                </tr>
-                                <tr>
-                                    <td class="px-6 py-4">
-                                        <span class="rounded bg-red-100 px-2 py-1 text-xs font-semibold text-red-800">DELETE</span>
-                                    </td>
-                                    <td class="px-6 py-4">/dashboard/users/{user}</td>
-                                    <td class="px-6 py-4 font-mono text-sm">admin.users.destroy</td>
-                                    <td class="px-6 py-4">auth, verified</td>
-                                    <td class="px-6 py-4 font-mono text-sm">UserController@destroy</td>
-                                </tr>
-
-                                <!-- Profile Management -->
-                                <tr>
-                                    <td class="px-6 py-4">
-                                        <span class="rounded bg-green-100 px-2 py-1 text-xs font-semibold text-green-800">GET</span>
-                                    </td>
-                                    <td class="px-6 py-4">/dashboard</td>
-                                    <td class="px-6 py-4 font-mono text-sm">admin.dashboard</td>
-                                    <td class="px-6 py-4">auth, verified, role:superadmin,admin,user</td>
-                                    <td class="px-6 py-4 font-mono text-sm">Closure</td>
-                                </tr>
-                                <tr>
-                                    <td class="px-6 py-4">
-                                        <span class="rounded bg-green-100 px-2 py-1 text-xs font-semibold text-green-800">GET</span>
-                                    </td>
-                                    <td class="px-6 py-4">/dashboard/profile</td>
-                                    <td class="px-6 py-4 font-mono text-sm">admin.profile.edit</td>
-                                    <td class="px-6 py-4">auth, verified, role:superadmin,admin,user</td>
-                                    <td class="px-6 py-4 font-mono text-sm">ProfileController@edit</td>
-                                </tr>
-                                <tr>
-                                    <td class="px-6 py-4">
-                                        <span class="rounded bg-blue-100 px-2 py-1 text-xs font-semibold text-blue-800">PATCH</span>
-                                    </td>
-                                    <td class="px-6 py-4">/dashboard/profile</td>
-                                    <td class="px-6 py-4 font-mono text-sm">admin.profile.update</td>
-                                    <td class="px-6 py-4">auth, verified, role:superadmin,admin,user</td>
-                                    <td class="px-6 py-4 font-mono text-sm">ProfileController@update</td>
-                                </tr>
-                                <tr>
-                                    <td class="px-6 py-4">
-                                        <span class="rounded bg-blue-100 px-2 py-1 text-xs font-semibold text-blue-800">PATCH</span>
-                                    </td>
-                                    <td class="px-6 py-4">/dashboard/photo-profile</td>
-                                    <td class="px-6 py-4 font-mono text-sm">admin.profile.photo-update</td>
-                                    <td class="px-6 py-4">auth, verified, role:superadmin,admin,user</td>
-                                    <td class="px-6 py-4 font-mono text-sm">ProfileController@updatePhoto</td>
-                                </tr>
-                                <tr>
-                                    <td class="px-6 py-4">
-                                        <span class="rounded bg-red-100 px-2 py-1 text-xs font-semibold text-red-800">DELETE</span>
-                                    </td>
-                                    <td class="px-6 py-4">/dashboard/profile</td>
-                                    <td class="px-6 py-4 font-mono text-sm">admin.profile.destroy</td>
-                                    <td class="px-6 py-4">auth, verified, role:superadmin,admin,user</td>
-                                    <td class="px-6 py-4 font-mono text-sm">ProfileController@destroy</td>
-                                </tr>
-
-                                <!-- Root Route -->
-                                <tr class="bg-blue-50">
-                                    <td class="px-6 py-3 text-lg font-semibold text-blue-700" colspan="5">General Routes</td>
-                                </tr>
-                                <tr>
-                                    <td class="px-6 py-4">
-                                        <span class="rounded bg-green-100 px-2 py-1 text-xs font-semibold text-green-800">GET</span>
-                                    </td>
-                                    <td class="px-6 py-4">/</td>
-                                    <td class="px-6 py-4">-</td>
-                                    <td class="px-6 py-4">-</td>
-                                    <td class="px-6 py-4 font-mono text-sm">Closure</td>
-                                </tr>
-                                <tr>
-                                    <td class="px-6 py-4">
-                                        <span class="rounded bg-green-100 px-2 py-1 text-xs font-semibold text-green-800">GET</span>
-                                    </td>
-                                    <td class="px-6 py-4">/docs</td>
-                                    <td class="px-6 py-4 font-mono text-sm">docs</td>
-                                    <td class="px-6 py-4">-</td>
-                                    <td class="px-6 py-4 font-mono text-sm">Closure</td>
-                                </tr>
+                                    @foreach ($routes as [$method, $uri, $name, $middleware, $action])
+                                        <tr>
+                                            <td class="px-6 py-4">
+                                                <span class="{{ $methodColors[$method] }} rounded px-2 py-1 text-xs font-semibold">{{ $method }}</span>
+                                            </td>
+                                            <td class="px-6 py-4">{{ $uri }}</td>
+                                            <td class="px-6 py-4 font-mono text-sm">{{ $name }}</td>
+                                            <td class="px-6 py-4">{{ $middleware }}</td>
+                                            <td class="px-6 py-4 font-mono text-sm">{{ $action }}</td>
+                                        </tr>
+                                    @endforeach
+                                @endforeach
                             </tbody>
                         </table>
                     </div>

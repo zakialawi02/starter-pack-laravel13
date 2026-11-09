@@ -41,6 +41,13 @@ return [
     'index_column' => 'DT_RowIndex',
 
     /*
+     * Maximum number of records that can be requested per page.
+     * A request asking for more, or for all the records using a length of -1,
+     * is capped to this value. Set to null to allow any length.
+     */
+    'max_length' => null,
+
+    /*
      * List of available builders for DataTables.
      * This is where you can register your custom DataTables builder.
      */
@@ -48,6 +55,7 @@ return [
         'eloquent' => Yajra\DataTables\EloquentDataTable::class,
         'query' => Yajra\DataTables\QueryDataTable::class,
         'collection' => Yajra\DataTables\CollectionDataTable::class,
+        'paginator' => Yajra\DataTables\PaginatorDataTable::class,
         'resource' => Yajra\DataTables\ApiResourceDataTable::class,
     ],
 

@@ -3,6 +3,7 @@ info:
   contact: {}
   title: laravel-restfull-api
   version: 1.0.0
+  description: "REST API of the Laravel 13 starter pack. Authenticate with a Laravel Sanctum bearer token from POST /api/auth/login or POST /api/auth/register and send it as `Authorization: Bearer <token>`. A new login revokes the user's previous tokens. The /api/v1/user endpoints work with any token for the token owner's own account. The /api/v1/users endpoints require the token of a verified superadmin; any other token gets 403."
 host: 127.0.0.1:8000
 basePath: /
 schemes:
@@ -107,41 +108,10 @@ paths:
           schema:
             properties:
               message:
-                example: Password reset link sent successfully
+                example: If an account with that email exists, a password reset link has been sent.
                 type: string
               success:
                 example: true
-                type: boolean
-              url_reset:
-                example: /api/auth/reset-password/?token=KVQyh3lKRUSfOUITkI0vilIBxiReTueesFhQjAVloFOJebOfQKBDb3uYU2i2&email=john_doe@mail.com
-                type: string
-            type: object
-        "404":
-          description: "Error: User not found"
-          headers:
-            Access-Control-Allow-Origin:
-              type: string
-            Cache-Control:
-              type: string
-            Connection:
-              type: string
-            Date:
-              type: string
-            Host:
-              type: string
-            X-Powered-By:
-              type: string
-            X-RateLimit-Limit:
-              type: string
-            X-RateLimit-Remaining:
-              type: string
-          schema:
-            properties:
-              message:
-                example: User not found
-                type: string
-              success:
-                example: false
                 type: boolean
             type: object
         "422":
@@ -179,7 +149,7 @@ paths:
                 example: false
                 type: boolean
             type: object
-      description: Forgot password Link Send
+      description: "Send a password reset link to the given email. The response is always the same 200 message, whether or not the email belongs to an account, and the reset token is only delivered by email. Throttled to 6 requests per minute."
       operationId: forgotPasswordLinkSend
       summary: Forgot password Link Send
   /api/auth/login:
@@ -246,7 +216,7 @@ paths:
                 example: true
                 type: boolean
               token:
-                example: 20|9GHYOrgv67bJtYU65sjqklk9NkQPjzWs5B2HKBlxaf8c02de
+                example: 1|your-sanctum-token-here
                 type: string
               token_type:
                 example: Bearer
@@ -317,7 +287,7 @@ paths:
                 example: false
                 type: boolean
             type: object
-      description: Login
+      description: "Log in with `id_user` (email or username) and `password` to receive a Sanctum token. After 5 failed attempts for the same id_user and IP, further attempts are rejected with 401 and a 'Too many login attempts' message until the lockout expires."
       operationId: login
       summary: Login
   /api/auth/logout:
@@ -450,7 +420,7 @@ paths:
                 example: true
                 type: boolean
               token:
-                example: 18|etUQXJpCLQnHjk1G7qQcVmC9dTZvfyY8DnpRj61Sd38fc84c
+                example: 1|your-sanctum-token-here
                 type: string
               token_type:
                 example: Bearer
@@ -518,7 +488,7 @@ paths:
                 example: "12345678910"
                 type: string
               token:
-                example: KVQyh3lKRUSfOUITkI0vilIBxiReTueesFhQjAVloFOJebOfQKBDb3uYU2i2
+                example: your-password-reset-token
                 type: string
             type: object
       responses:
@@ -2344,7 +2314,16 @@ paths:
                 example: false
                 type: boolean
             type: object
-      description: Get Users
+        "403":
+          description: "Error: not a verified superadmin"
+          schema:
+            properties:
+              message:
+                description: "\"Your email address is not verified.\" for an unverified superadmin; empty for any other role."
+                example: Your email address is not verified.
+                type: string
+            type: object
+      description: "List all users. Requires the Sanctum token of a verified superadmin (auth:sanctum, verified, role:superadmin). Any other token gets 403 Forbidden."
       operationId: getUsers
       summary: Get Users
   /api/v1/users/:
@@ -2475,7 +2454,16 @@ paths:
                 example: false
                 type: boolean
             type: object
-      description: Store users
+        "403":
+          description: "Error: not a verified superadmin"
+          schema:
+            properties:
+              message:
+                description: "\"Your email address is not verified.\" for an unverified superadmin; empty for any other role."
+                example: Your email address is not verified.
+                type: string
+            type: object
+      description: "Create a user. Requires the Sanctum token of a verified superadmin (auth:sanctum, verified, role:superadmin). Any other token gets 403 Forbidden."
       operationId: storeUsers
       summary: Store users
   /api/v1/users/{userIDd}:
@@ -2551,7 +2539,16 @@ paths:
                 example: false
                 type: boolean
             type: object
-      description: Delete users
+        "403":
+          description: "Error: not a verified superadmin"
+          schema:
+            properties:
+              message:
+                description: "\"Your email address is not verified.\" for an unverified superadmin; empty for any other role."
+                example: Your email address is not verified.
+                type: string
+            type: object
+      description: "Delete a user (soft delete). Requires the Sanctum token of a verified superadmin (auth:sanctum, verified, role:superadmin). Any other token gets 403 Forbidden."
       operationId: deleteUsers
       summary: Delete users
   /api/v1/users/{userId}:
@@ -2681,7 +2678,16 @@ paths:
                 example: false
                 type: boolean
             type: object
-      description: Update users
+        "403":
+          description: "Error: not a verified superadmin"
+          schema:
+            properties:
+              message:
+                description: "\"Your email address is not verified.\" for an unverified superadmin; empty for any other role."
+                example: Your email address is not verified.
+                type: string
+            type: object
+      description: "Update a user. Requires the Sanctum token of a verified superadmin (auth:sanctum, verified, role:superadmin). Any other token gets 403 Forbidden."
       operationId: updateUsers
       summary: Update users
   /api/v1/users/{user_id}:
@@ -2768,7 +2774,16 @@ paths:
                 example: false
                 type: boolean
             type: object
-      description: Get Users Detail
+        "403":
+          description: "Error: not a verified superadmin"
+          schema:
+            properties:
+              message:
+                description: "\"Your email address is not verified.\" for an unverified superadmin; empty for any other role."
+                example: Your email address is not verified.
+                type: string
+            type: object
+      description: "Get one user by ID. Requires the Sanctum token of a verified superadmin (auth:sanctum, verified, role:superadmin). Any other token gets 403 Forbidden."
       operationId: getUsersDetail
       summary: Get Users Detail
 tags: []

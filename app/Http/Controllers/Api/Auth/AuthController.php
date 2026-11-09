@@ -2,18 +2,17 @@
 
 namespace App\Http\Controllers\Api\Auth;
 
-use Illuminate\Support\Str;
-use Illuminate\Http\Request;
-use Illuminate\Validation\Rules;
-use Illuminate\Http\JsonResponse;
-use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
+use Illuminate\Auth\Events\PasswordReset;
 use Illuminate\Auth\Events\Verified;
+use Illuminate\Foundation\Auth\EmailVerificationRequest;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Password;
-use Illuminate\Auth\Events\PasswordReset;
 use Illuminate\Support\Facades\Validator;
-use Illuminate\Foundation\Auth\EmailVerificationRequest;
+use Illuminate\Support\Str;
+use Illuminate\Validation\Rules;
 
 class AuthController extends Controller
 {
@@ -26,36 +25,18 @@ class AuthController extends Controller
         if ($validator->fails()) {
             return response()->json([
                 'success' => false,
-                'errors' => $validator->errors()
+                'errors' => $validator->errors(),
             ], 422);
         }
 
-        $user = \App\Models\User::where('email', $request->email)->first();
-
-        if (!$user) {
-            return response()->json([
-                'success' => false,
-                'message' => 'User not found'
-            ], 404);
-        }
-
-        $token = Str::random(60);
-
-        DB::table('password_reset_tokens')->updateOrInsert(
-            ['email' => $user->email],
-            [
-                'email' => $user->email,
-                'token' => Hash::make($token),
-                'created_at' => now()
-            ]
-        );
-
-        $user->sendPasswordResetNotification($token);
+        // The token is only ever delivered by email, and the response is identical
+        // whether or not the address belongs to an account, so it can't be used
+        // to discover registered emails.
+        Password::sendResetLink($request->only('email'));
 
         return response()->json([
             'success' => true,
-            'message' => 'Password reset link sent successfully',
-            'url_reset' => '/api/auth/reset-password/' . '?token=' . $token . '&email=' . $user->email
+            'message' => 'If an account with that email exists, a password reset link has been sent.',
         ], 200);
     }
 
@@ -70,7 +51,7 @@ class AuthController extends Controller
         if ($validator->fails()) {
             return response()->json([
                 'success' => false,
-                'errors' => $validator->errors()
+                'errors' => $validator->errors(),
             ], 422);
         }
 
@@ -92,13 +73,13 @@ class AuthController extends Controller
         if ($status == Password::PASSWORD_RESET) {
             return response()->json([
                 'success' => true,
-                'message' => __($status)
+                'message' => __($status),
             ], 201);
         }
 
         return response()->json([
             'success' => false,
-            'message' => __($status)
+            'message' => __($status),
         ], 400);
     }
 
@@ -122,7 +103,7 @@ class AuthController extends Controller
 
         return response()->json([
             'success' => true,
-            'message' => 'Verification link sent'
+            'message' => 'Verification link sent',
         ]);
     }
 
