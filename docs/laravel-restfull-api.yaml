@@ -107,14 +107,11 @@ paths:
           schema:
             properties:
               message:
-                example: Password reset link sent successfully
+                example: If an account with that email exists, a password reset link has been sent.
                 type: string
               success:
                 example: true
                 type: boolean
-              url_reset:
-                example: /api/auth/reset-password/?token=KVQyh3lKRUSfOUITkI0vilIBxiReTueesFhQjAVloFOJebOfQKBDb3uYU2i2&email=john_doe@mail.com
-                type: string
             type: object
         "404":
           description: "Error: User not found"
@@ -246,7 +243,7 @@ paths:
                 example: true
                 type: boolean
               token:
-                example: 20|9GHYOrgv67bJtYU65sjqklk9NkQPjzWs5B2HKBlxaf8c02de
+                example: 1|your-sanctum-token-here
                 type: string
               token_type:
                 example: Bearer
@@ -450,7 +447,7 @@ paths:
                 example: true
                 type: boolean
               token:
-                example: 18|etUQXJpCLQnHjk1G7qQcVmC9dTZvfyY8DnpRj61Sd38fc84c
+                example: 1|your-sanctum-token-here
                 type: string
               token_type:
                 example: Bearer
@@ -518,7 +515,7 @@ paths:
                 example: "12345678910"
                 type: string
               token:
-                example: KVQyh3lKRUSfOUITkI0vilIBxiReTueesFhQjAVloFOJebOfQKBDb3uYU2i2
+                example: your-password-reset-token
                 type: string
             type: object
       responses:
