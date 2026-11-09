@@ -1,8 +1,8 @@
-# StarterPack Laravel
+# StarterPack Laravel 13
 
 A Laravel 13 starter template with authentication, role-based access control, user management, a Sanctum REST API and social login built in (Laravel 13 + Blade + Tailwind CSS with Preline UI).
 
-> The repository is still named `starter-pack-laravel12` for continuity, but the code runs on **Laravel 13**.
+> This repository was renamed from `starter-pack-laravel12` to `starter-pack-laravel13`. GitHub redirects the old URL, but existing clones should update their remote (see [Upgrading from the Laravel 12 Version](#upgrading-from-the-laravel-12-version)).
 
 ## Table of Contents
 
@@ -51,8 +51,8 @@ A Laravel 13 starter template with authentication, role-based access control, us
 1. **Clone the repository**
 
     ```bash
-    git clone https://github.com/zakialawi02/starter-pack-laravel12.git
-    cd starter-pack-laravel12
+    git clone https://github.com/zakialawi02/starter-pack-laravel13.git
+    cd starter-pack-laravel13
     ```
 
 2. **Install PHP dependencies**
@@ -204,7 +204,7 @@ The dashboard requires a verified email. The profile page does not.
 ## Project Structure
 
 ```
-starter-pack-laravel12/
+starter-pack-laravel13/
 ├── app/
 │   ├── Actions/                 # Reusable action classes (e.g. UploadCoverImage)
 │   ├── Enums/                   # UserRole enum
@@ -386,9 +386,10 @@ Any other token gets `403 Forbidden` on these endpoints.
 
 ## Upgrading from the Laravel 12 Version
 
-If you already have a checkout of the Laravel 12 version:
+If you already have a checkout of the Laravel 12 version (cloned as `starter-pack-laravel12`):
 
 ```bash
+git remote set-url origin https://github.com/zakialawi02/starter-pack-laravel13.git
 git pull
 composer install
 php artisan optimize:clear
@@ -444,8 +445,8 @@ This project is licensed under the MIT License. See the [LICENSE](LICENSE) file 
 If you find this project useful and would like to support its further development, you can donate via https://ko-fi.com/zakialawi. Every contribution is greatly appreciated. Thank you!
 
 -   **Documentation**: [Wiki](WIKI.md)
--   **Issues**: [GitHub Issues](https://github.com/zakialawi02/starter-pack-laravel12/issues)
--   **Discussions**: [GitHub Discussions](https://github.com/zakialawi02/starter-pack-laravel12/discussions)
+-   **Issues**: [GitHub Issues](https://github.com/zakialawi02/starter-pack-laravel13/issues)
+-   **Discussions**: [GitHub Discussions](https://github.com/zakialawi02/starter-pack-laravel13/discussions)
 
 ## Acknowledgments
 

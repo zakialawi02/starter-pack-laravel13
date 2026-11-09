@@ -72,10 +72,10 @@
         <!-- Text -->
         <div>
             <h1 class="text-3xl font-bold leading-tight md:text-4xl">
-                {{ __('Welcome To') }} <span class="text-primary">Starter Pack Laravel 12</span>
+                {{ __('Welcome To') }} <span class="text-primary">Starter Pack Laravel 13</span>
             </h1>
             <p class="text-foreground mt-4 text-lg">
-                Laravel 12 + blade + tailwindcss + Basic Auth
+                Laravel 13 + Blade + Tailwind CSS + Auth
             </p>
             <p class="text-foreground/90 mt-3">
                 Lorem ipsum dolor sit amet consectetur adipisicing elit. Iste in nam numquam doloribus beatae tempore quas magni eligendi praesentium molestias vero excepturi obcaecati laudantium, nulla laboriosam nemo dolorum similique a...

@@ -43,7 +43,7 @@ This starter pack is a foundation for web applications on Laravel 13. It ships w
 ## Project Structure
 
 ```
-starter-pack-laravel12/
+starter-pack-laravel13/
 ├── app/
 │   ├── Actions/              # Reusable action classes
 │   ├── Enums/                # UserRole enum
@@ -74,8 +74,8 @@ starter-pack-laravel12/
 1. Clone the repository:
 
     ```bash
-    git clone https://github.com/zakialawi02/starter-pack-laravel12.git
-    cd starter-pack-laravel12
+    git clone https://github.com/zakialawi02/starter-pack-laravel13.git
+    cd starter-pack-laravel13
     ```
 
 2. Install PHP dependencies:
