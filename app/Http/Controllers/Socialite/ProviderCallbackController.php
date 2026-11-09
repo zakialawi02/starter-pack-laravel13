@@ -2,9 +2,9 @@
 
 namespace App\Http\Controllers\Socialite;
 
+use App\Http\Controllers\Controller;
 use App\Models\User;
 use Illuminate\Http\Request;
-use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Auth;
 use Laravel\Socialite\Facades\Socialite;
 
@@ -15,7 +15,7 @@ class ProviderCallbackController extends Controller
      */
     public function __invoke(string $provider)
     {
-        if (!config("services.{$provider}")) {
+        if (! config("services.{$provider}")) {
             return redirect()->route('login')->withErrors(['provider' => 'Invalid provider']);
         }
 
@@ -40,15 +40,15 @@ class ProviderCallbackController extends Controller
             Auth::login($user);
 
             // Check if there's a stored redirect URL from OAuth flow
-            $redirectUrl = session()->pull('oauth_redirect');
-            if ($redirectUrl && $redirectUrl !== '/') {
+            $redirectUrl = $this->sameOriginRedirectTarget(session()->pull('oauth_redirect'));
+            if ($redirectUrl) {
                 return redirect($redirectUrl);
             }
 
             return redirect('/dashboard');
         } catch (\Exception $e) {
 
-            return redirect()->route('login')->withErrors(['provider' => 'Unable to login using ' . ucfirst($provider) . '. Please try again.']);
+            return redirect()->route('login')->withErrors(['provider' => 'Unable to login using '.ucfirst($provider).'. Please try again.']);
         }
     }
 
@@ -58,13 +58,13 @@ class ProviderCallbackController extends Controller
         $username = $socialUser->getNickname() ?? null;
 
         // If no username from provider, generate from name or email
-        if (!$username) {
-            if (!empty($socialUser->name)) {
+        if (! $username) {
+            if (! empty($socialUser->name)) {
                 // Use name and convert to username format
-                $username = strtolower(str_replace(' ', '_', $socialUser->name)) . '_' . rand(1000, 9999);
+                $username = strtolower(str_replace(' ', '_', $socialUser->name)).'_'.rand(1000, 9999);
             } else {
                 // Use email prefix as fallback
-                $username = strtolower(explode('@', $socialUser->email)[0]) . '_' . rand(1000, 9999);
+                $username = strtolower(explode('@', $socialUser->email)[0]).'_'.rand(1000, 9999);
             }
         }
 
@@ -75,7 +75,7 @@ class ProviderCallbackController extends Controller
         $baseUsername = $username;
         $counter = 1;
         while (User::where('username', $username)->exists()) {
-            $username = $baseUsername . '_' . $counter;
+            $username = $baseUsername.'_'.$counter;
             $counter++;
         }
 
