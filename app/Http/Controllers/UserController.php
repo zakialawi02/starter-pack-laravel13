@@ -33,30 +33,32 @@ class UserController extends Controller
                     if ($user->username === 'admin' || $user->id === auth()->id()) {
                         return '';
                     }
-                    return '<input type="checkbox" class="user-checkbox size-4 rounded border-border text-primary focus:ring-primary cursor-pointer" value="' . $user->id . '">';
+
+                    return '<input type="checkbox" class="user-checkbox size-4 rounded border-border text-primary focus:ring-primary cursor-pointer" value="'.$user->id.'">';
                 })
                 ->addColumn('action', function (User $user) {
                     $actions = '<div class="flex items-center gap-2">';
-                    $actions .= '<button class="text-primary hover:text-primary/70 edit-user" data-id="' . $user->id . '" title="Edit User"><i class="ri-pencil-line text-lg"></i></button>';
+                    $actions .= '<button class="text-primary hover:text-primary/70 edit-user" data-id="'.$user->id.'" title="Edit User"><i class="ri-pencil-line text-lg"></i></button>';
 
                     if ($user->username !== 'admin' && $user->id !== auth()->id()) {
-                        $actions .= '<button class="text-error hover:text-error/70 delete-user" data-id="' . $user->id . '" title="Delete User"><i class="ri-delete-bin-line text-lg"></i></button>';
+                        $actions .= '<button class="text-error hover:text-error/70 delete-user" data-id="'.$user->id.'" title="Delete User"><i class="ri-delete-bin-line text-lg"></i></button>';
                     }
 
                     $actions .= '</div>';
+
                     return $actions;
                 })
                 ->addColumn('user_info', function (User $user) {
                     $avatar = $user->profile_photo_path
                         ? asset($user->profile_photo_path)
-                        : 'https://ui-avatars.com/api/?name=' . urlencode($user->name) . '&background=random';
+                        : 'https://ui-avatars.com/api/?name='.urlencode($user->name).'&background=random';
 
                     return '
                         <div class="flex items-center gap-3">
-                            <img src="' . $avatar . '" class="size-10 rounded-full object-cover">
+                            <img src="'.e($avatar).'" class="size-10 rounded-full object-cover">
                             <div class="flex flex-col">
-                                <span class="text-foreground font-semibold">' . $user->name . '</span>
-                                <span class="text-muted-foreground text-xs">' . $user->email . '</span>
+                                <span class="text-foreground font-semibold">'.e($user->name).'</span>
+                                <span class="text-muted-foreground text-xs">'.e($user->email).'</span>
                             </div>
                         </div>
                     ';
@@ -106,6 +108,7 @@ class UserController extends Controller
             })
             ->when($request->search, function ($q) use ($request) {
                 $search = $request->search;
+
                 return $q->where(function ($query) use ($search) {
                     $query->where('name', 'like', "%{$search}%")
                         ->orWhere('email', 'like', "%{$search}%")
@@ -117,7 +120,7 @@ class UserController extends Controller
 
         $headers = [
             'Content-Type' => 'text/csv',
-            'Content-Disposition' => 'attachment; filename="users_export_' . now()->format('Ymd_His') . '.csv"',
+            'Content-Disposition' => 'attachment; filename="users_export_'.now()->format('Ymd_His').'.csv"',
         ];
 
         $callback = function () use ($users) {
@@ -178,19 +181,20 @@ class UserController extends Controller
         $seenUsernames = [];
         $seenEmails = [];
 
-        if (($handle = fopen($file->getRealPath(), 'r')) !== FALSE) {
-            while (($data = fgetcsv($handle, 1000, ",")) !== FALSE) {
-                if (!$header) {
+        if (($handle = fopen($file->getRealPath(), 'r')) !== false) {
+            while (($data = fgetcsv($handle, 1000, ',')) !== false) {
+                if (! $header) {
                     $header = $data;
+
                     continue;
                 }
 
                 $row = array_combine($header, $data);
 
                 // Use rules from StoreUserRequest
-                $rules = (new StoreUserRequest())->rules();
+                $rules = (new StoreUserRequest)->rules();
 
-                if (!isset($row['email_verified_at'])) {
+                if (! isset($row['email_verified_at'])) {
                     unset($rules['email_verified_at']);
                 }
 
@@ -201,16 +205,20 @@ class UserController extends Controller
                 }
 
                 // Check for duplicates within the CSV file
-                if (!empty($row['username']) && in_array(strtolower($row['username']), $seenUsernames)) {
+                if (! empty($row['username']) && in_array(strtolower($row['username']), $seenUsernames)) {
                     $errors[] = 'Duplicate username in this file';
                 }
-                if (!empty($row['email']) && in_array(strtolower($row['email']), $seenEmails)) {
+                if (! empty($row['email']) && in_array(strtolower($row['email']), $seenEmails)) {
                     $errors[] = 'Duplicate email in this file';
                 }
 
                 // Track seen values (using lowercase for comparison)
-                if (!empty($row['username'])) $seenUsernames[] = strtolower($row['username']);
-                if (!empty($row['email'])) $seenEmails[] = strtolower($row['email']);
+                if (! empty($row['username'])) {
+                    $seenUsernames[] = strtolower($row['username']);
+                }
+                if (! empty($row['email'])) {
+                    $seenEmails[] = strtolower($row['email']);
+                }
 
                 $rows[] = [
                     'data' => $row,
@@ -225,9 +233,9 @@ class UserController extends Controller
             'rows' => $rows,
             'summary' => [
                 'total' => count($rows),
-                'valid' => count(array_filter($rows, fn($r) => $r['is_valid'])),
-                'invalid' => count(array_filter($rows, fn($r) => !$r['is_valid'])),
-            ]
+                'valid' => count(array_filter($rows, fn ($r) => $r['is_valid'])),
+                'invalid' => count(array_filter($rows, fn ($r) => ! $r['is_valid'])),
+            ],
         ]);
     }
 
@@ -246,7 +254,7 @@ class UserController extends Controller
         try {
             foreach ($data as $userData) {
                 // Final validation before creation
-                $validator = Validator::make($userData, (new StoreUserRequest())->rules());
+                $validator = Validator::make($userData, (new StoreUserRequest)->rules());
 
                 if ($validator->fails()) {
                     continue; // Skip invalid rows
@@ -265,7 +273,8 @@ class UserController extends Controller
             DB::commit();
         } catch (\Exception $e) {
             DB::rollBack();
-            return response()->json(['message' => 'Import failed: ' . $e->getMessage()], 500);
+
+            return response()->json(['message' => 'Import failed: '.$e->getMessage()], 500);
         }
 
         return response()->json(['message' => "$count users imported successfully"]);
@@ -326,7 +335,7 @@ class UserController extends Controller
         if (
             $user->username === 'admin'
             && $request->has('email_verified_at')
-            && !$request->boolean('email_verified_at')
+            && ! $request->boolean('email_verified_at')
         ) {
             return response()->json([
                 'success' => false,
@@ -360,7 +369,7 @@ class UserController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => __('messages.admin_delete_error'),
-                'errors' => 'Forbidden: ' . __('messages.admin_delete_error'),
+                'errors' => 'Forbidden: '.__('messages.admin_delete_error'),
             ], 403);
         }
 
@@ -404,7 +413,7 @@ class UserController extends Controller
      */
     private function prepareEmailVerification(array $validated, ?User $user = null): array
     {
-        if (!array_key_exists('email_verified_at', $validated)) {
+        if (! array_key_exists('email_verified_at', $validated)) {
             return $validated;
         }
 
