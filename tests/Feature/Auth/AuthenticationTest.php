@@ -46,7 +46,9 @@ test('username login is locked out after five failures even when the email field
         'id_user' => 'victimuser',
         'password' => 'password',
         'email' => 'rotated-6@dummy.test',
-    ])->assertSessionHasErrors('email');
+    ])->assertSessionHasErrors('id_user');
+
+    expect(session('errors')->first('id_user'))->toStartWith('Too many login attempts.');
 
     $this->assertGuest();
 });
