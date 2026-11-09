@@ -1,12 +1,15 @@
 {
     "$schema": "https://getcomposer.org/schema.json",
-    "name": "laravel/laravel",
+    "name": "zakialawi02/starter-pack-laravel13",
     "type": "project",
-    "description": "The skeleton application for the Laravel framework.",
+    "description": "Laravel 13 starter pack with Blade, Tailwind CSS (Preline UI), Breeze-based auth, Socialite, role-based access control, user management, a Sanctum REST API and Laravel Boost.",
     "keywords": [
         "laravel",
+        "laravel-13",
+        "starter-kit",
         "framework"
     ],
+    "homepage": "https://github.com/zakialawi02/starter-pack-laravel13",
     "license": "MIT",
     "require": {
         "php": "^8.3",
